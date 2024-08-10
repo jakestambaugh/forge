@@ -11,32 +11,18 @@
 ///
 /// forged: the forged  (pronounced "Forge-Dee") scans the filesystem for Forgefiles and marks those directories.
 use std::{
-    io::Write,
-    os::unix::net::UnixListener,
     path::{Path, PathBuf},
+    thread,
 };
 use tracing::warn;
 
-use forge::forgefile::{parse_forgefile, Forgefile};
-
-const FORGEFILE_NAME: &'static str = "Forgefile";
+use forge::{
+    forgefile::{parse_forgefile, Forgefile, FORGEFILE_NAME},
+    socket,
+};
 
 fn main() -> std::io::Result<()> {
-    // Create the Unix Domain socket for communicating with the CLI
-    let socket_directory = Path::new("/var/run/forge");
-    let forged_socket_path = socket_directory.join("forged.sock");
-    // Unlink the socket if it already exists
-    std::fs::remove_file(&forged_socket_path)?;
-    // TODO: maybe don't unwrap this result, handle more gracefully if we can't bind to the socket.
-    let listener = UnixListener::bind(&forged_socket_path).unwrap();
-
-    match listener.accept() {
-        Ok((mut socket, addr)) => {
-            println!("Got a connection {:?} - {:?}", socket, addr);
-            socket.write_all(b"Forged says Hi!").unwrap();
-        }
-        Err(e) => tracing::error!("accept function failed {:?}", e),
-    }
+    let socket_listener_handle = thread::spawn(|| socket::create_socket_listener());
 
     // I'm just now realizing that this code probably has to be multithreaded.
     // There should be a server handling requests from the CLI (maybe multiple CLIs)
@@ -53,7 +39,11 @@ fn main() -> std::io::Result<()> {
     // each subprocess. It probably makes sense to create a socket/file for each in `/var/run/forge` where the
     // naming looks like `<PID>.stdin.sock` and `<PID>.stdout.sock`
     //
-    // We will definitely have a map of subprocesses to forgefiles
+    // We will definitely have a map of subprocesses to Forgefiles
+
+    // TODO: I'm pretty sure that `join()` will make this process hang out until the `create_socket_listener`
+    // thread returns.
+    let _ = socket_listener_handle.join();
     Ok(())
 }
 

@@ -8,15 +8,10 @@
 /// Forge CLI will be responsible for dealing with the Forge daemon
 ///
 /// Forgefiles will be TOML with a block for `build`, `test`, and `run`
-use std::io::prelude::*;
-use std::os::unix::net::UnixStream;
+use forge::socket;
 
 fn main() -> std::io::Result<()> {
-    let mut stream = UnixStream::connect("/var/run/forge/forged.sock")?;
-    stream.write_all(b"hello world")?;
-    let mut response = String::new();
-    stream.read_to_string(&mut response)?;
-    println!("{response}");
+    socket::connect_to_socket()?;
     Ok(())
 }
 
@@ -24,3 +19,5 @@ fn main() -> std::io::Result<()> {
 //
 // `status` This should return a list of each of the running subprocesses for the
 // tasks configured in the Forgefile here.
+
+// Helpful blog post about managing stdout: https://andrewra.dev/2019/08/05/testing-in-rust-writing-to-stdout/

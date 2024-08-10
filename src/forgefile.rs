@@ -3,6 +3,8 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
+pub const FORGEFILE_NAME: &'static str = "Forgefile.toml";
+
 #[derive(Debug, Deserialize)]
 pub struct Forgefile {
     /// The command to run to build this project
