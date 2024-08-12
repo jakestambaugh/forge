@@ -1,9 +1,12 @@
 use lazy_static::lazy_static;
+use serde::Deserialize;
 use std::{
     io::{Read, Write},
     os::unix::net::{UnixListener, UnixStream},
     path::{Path, PathBuf},
 };
+
+use crate::protocol::{Command, Request};
 
 lazy_static! {
     static ref SOCKET_DIRECTORY: PathBuf = PathBuf::from("/var/run/forge");
@@ -22,16 +25,28 @@ pub fn create_socket_listener() -> std::io::Result<()> {
     }
 }
 
+// TODO: rename and refactor
 pub fn connect_to_socket() -> std::io::Result<()> {
     let mut unix_stream = UnixStream::connect(FORGED_SOCKET_PATH.as_path())?;
-    unix_stream.write(b"Hello from the client")?;
+
+    let req = Request {
+        command: Command::Build,
+        directory: PathBuf::from("/home/jake/code/forge"),
+    };
+    let serialized: String = serde_json::to_string(&req).unwrap();
+
+    unix_stream.write(serialized.as_bytes())?;
+
     Ok(())
 }
 
 pub fn handle_stream(mut stream: UnixStream) -> std::io::Result<()> {
-    let mut message = String::new();
-    stream.read_to_string(&mut message)?;
+    let mut buffer = String::new();
+    stream.read_to_string(&mut buffer)?;
 
-    println!("{}", message);
+    // TODO: try some of the other parsing styles, like from_reader() or from_bytes()
+    let request = serde_json::from_str(s).unwrap();
+
+    println!("{}", request.command);
     Ok(())
 }
