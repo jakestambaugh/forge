@@ -1,4 +1,7 @@
-use crate::protocol::ForgeRequest;
+use crate::{
+    protocol::{ForgeCommand, ForgeRequest},
+    subprocess,
+};
 use lazy_static::lazy_static;
 use std::{
     io::{Read, Write},
@@ -31,6 +34,7 @@ pub fn send_to_socket(req: &ForgeRequest) -> std::io::Result<()> {
     Ok(())
 }
 
+// The daemon-side handler for incoming messages
 pub fn handle_stream(mut stream: UnixStream) -> std::io::Result<()> {
     let mut buffer = String::new();
     stream.read_to_string(&mut buffer)?;
@@ -38,6 +42,9 @@ pub fn handle_stream(mut stream: UnixStream) -> std::io::Result<()> {
     // TODO: try some of the other parsing styles, like from_reader() or from_bytes()
     let request: ForgeRequest = serde_json::from_str(&buffer).unwrap();
 
-    println!("{:?}", request.command);
+    match request.command {
+        ForgeCommand::Status => println!("{:?}", request.command),
+        ForgeCommand::Run => subprocess::spawn(&buffer),
+    }
     Ok(())
 }

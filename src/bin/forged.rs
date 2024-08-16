@@ -91,7 +91,7 @@ fn _execute_forgefile() {
 // Useful blog about testing using tempfile: https://andrewra.dev/2019/03/01/testing-in-rust-temporary-files/
 // Try using this crate also https://crates.io/crates/assert_fs
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use std::fs::{create_dir_all, File};
 

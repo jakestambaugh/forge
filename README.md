@@ -10,6 +10,11 @@ Much like Docker and `docker.sock`, there is a permissions issue with the `/var/
 
 ## Devlog
 
+### Aug 15
+
+Set up a subprocess to run the Forgefile-described instructions. For now, I'll just run a one-shot subprocess. In the future, we
+will re-run the instructions whenever the files in that directory change, but before that happens we need to build the file watcher.
+
 ### Aug 12
 
 The goal for today is to create a protocol definition for the unix socket connection. We will keep it really simple for now.

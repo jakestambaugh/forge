@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub enum ForgeCommand {
     Status,
+    // This is a temporary one-shot subprocess run
+    Run,
 }
 
 /// This is the structure of a request message from the CLI to the Server
